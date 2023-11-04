@@ -1,0 +1,3 @@
+# Uses VS Code REST Client extenstion to test the API
+
+GET https://localhost:8080/rolldice
