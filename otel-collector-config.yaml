@@ -1,0 +1,25 @@
+receivers:
+  # use the efficient otlp grpc protocol
+  otlp:
+    protocols:
+      grpc:
+        
+exporters:
+  # metrics exporter
+  prometheus:
+    # prometheus will scrape from here
+    endpoint: :8889
+    resource_to_telemetry_conversion:
+      enabled: true
+
+processors:
+  # enable batching - this is important for performance
+  # https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/batchprocessor/README.md
+  batch:
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: []
+      exporters: [prometheus]

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Reflection;
 
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -11,6 +12,12 @@ string serviceName = Assembly.GetExecutingAssembly().GetName().Name!;
 string serviceVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
                             ?? Assembly.GetExecutingAssembly().GetName()?.Version?.ToString() ?? "1.0.0";
                             
+var resourceBuilder = ResourceBuilder.CreateDefault()
+    .AddService(serviceName,
+                serviceVersion: serviceVersion,
+                serviceInstanceId: null,
+                autoGenerateServiceInstanceId: false)
+    .AddAttributes(new [] { new KeyValuePair<string, object>("host.name", Environment.MachineName) });
 
 System.Console.WriteLine($"Service Name: {serviceName} Version: {serviceVersion}");
 
@@ -18,14 +25,24 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<SimpleApiMetrics>();
 
+
 // Configure OpenTelemetry settings, the console exporter
 builder.Services.AddOpenTelemetry()
     .WithMetrics(m => m
+        .ConfigureResource(r => {
+            r.AddService(serviceName,
+                serviceVersion: null,
+                serviceInstanceId: null,
+                autoGenerateServiceInstanceId: false);
+            r.AddAttributes(new [] { new KeyValuePair<string, object>("host.name", Environment.MachineName) });
+        })
         .AddAspNetCoreInstrumentation()
         .AddMeter(SimpleApiMetrics.Name)
-        .AddOtlpExporter()
+        .AddOtlpExporter((c,r) => {
+            // Export every second, but this is for demo purposes!
+            r.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 1000;
+        })
         .AddConsoleExporter()
-        .ConfigureResource(c => c.AddService(serviceName))
     );
 
 var app = builder.Build();

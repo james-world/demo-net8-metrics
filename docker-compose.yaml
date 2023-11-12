@@ -1,0 +1,34 @@
+services:
+
+  # OpenTelemetry Contrib Collector container
+  # See https://opentelemetry.io/docs/collector/instaltation/#docker-compose
+  # Check there for latest version - for demo stability this file locks to a specific version
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.88.0
+    ports:
+      - "4317:4317"     # OTLP gRPC receiver
+      - "8889:8889"     # Prometheus metrics exporter endpoint
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    command: ["--config=/etc/otel-collector-config.yaml"]
+
+  # Prometheus container
+  # This will scrape metrics from the OpenTelemetry Contrib Collector's prometheus exporter endpoint
+  prometheus:
+    image: prom/prometheus:v2.47.2
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+        
+  # Grafana container
+  # This will display metrics from Prometheus
+  grafana:
+    image: grafana/grafana-oss:10.2.0
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana.datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ./grafana.dashboard.provider.yaml:/etc/grafana/provisioning/dashboards/dashboard.provider.yaml
+      - ./aspnetcore.dashboard.json:/etc/grafana/dashboards/aspnetcore.dashboard.json
