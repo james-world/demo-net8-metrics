@@ -31,4 +31,5 @@ services:
       - ./grafana.ini:/etc/grafana/grafana.ini
       - ./grafana.datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
       - ./grafana.dashboard.provider.yaml:/etc/grafana/provisioning/dashboards/dashboard.provider.yaml
-      - ./aspnetcore.dashboard.json:/etc/grafana/dashboards/aspnetcore.dashboard.json
+      - ./aspnetcore.overview.dashboard.json:/etc/grafana/dashboards/aspnetcore.overview.dashboard.json
+      - ./aspnetcore.endpoint.dashboard.json:/etc/grafana/dashboards/aspnetcore.endpoint.dashboard.json
