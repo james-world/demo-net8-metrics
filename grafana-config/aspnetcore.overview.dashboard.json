@@ -415,7 +415,7 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(rate(http_server_request_duration_seconds_bucket{service_name=\"$service\"}[$__rate_interval]))",
+          "expr": "sum(rate(http_server_request_duration_seconds_count{service_name=\"$service\", http_response_status_code=~\"4..|5..\"}[5m]) or vector(0)) / sum(rate(http_server_request_duration_seconds_count{service_name=\"$service\"}[5m]))",
           "legendFormat": "All",
           "range": true,
           "refId": "All"
@@ -426,7 +426,7 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(rate(http_server_request_duration_seconds_bucket{service_name=\"$service\"}[$__rate_interval]))",
+          "expr": "sum(rate(http_server_request_duration_seconds_count{service_name=\"$service\", http_response_status_code=~\"4..\"}[5m]) or vector(0)) / sum(rate(http_server_request_duration_seconds_count{service_name=\"$service\"}[5m]))",
           "hide": false,
           "legendFormat": "4XX",
           "range": true,
@@ -438,7 +438,7 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(rate(http_server_request_duration_seconds_bucket{service_name=\"$service\"}[$__rate_interval]))",
+          "expr": "sum(rate(http_server_request_duration_seconds_count{service_name=\"$service\", http_response_status_code=~\"5..\"}[5m]) or vector(0)) / sum(rate(http_server_request_duration_seconds_count{service_name=\"$service\"}[5m]))",
           "hide": false,
           "legendFormat": "5XX",
           "range": true,

@@ -49,14 +49,18 @@ var app = builder.Build();
 
 ILogger logger = app.Logger;
 
+Random random = new();
+
 int RollDice()
 {
     return Random.Shared.Next(1, 7);
 }
 
-string HandleRollDice(string? player, SimpleApiMetrics metrics)
+async Task<string> HandleRollDice(string? player, SimpleApiMetrics metrics)
 {
     var result = RollDice();
+
+    await Task.Delay(random.Next(100, 750));
 
     if (string.IsNullOrEmpty(player))
     {
@@ -66,6 +70,9 @@ string HandleRollDice(string? player, SimpleApiMetrics metrics)
     {
         logger.LogInformation("{player} is rolling the dice: {result}", player, result);
     }
+
+    if (player == "james")
+        throw new ApplicationException("James is not allowed to play!");
 
     metrics.Increment();
 
