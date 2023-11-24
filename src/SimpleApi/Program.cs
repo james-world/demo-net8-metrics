@@ -78,7 +78,7 @@ async Task<string> HandleRollDice(string? player, SimpleApiMetrics metrics, Http
     if (player == "james")
         throw new ApplicationException("James is not allowed to play!");
 
-    metrics.Increment();
+    metrics.RecordDiceRoll(result);
 
     return result.ToString(CultureInfo.InvariantCulture);
 }
@@ -112,12 +112,15 @@ public class SimpleApiMetrics
     public SimpleApiMetrics(IMeterFactory meterFactory)
     {
         var meter = meterFactory.Create(Name);
-        _counter = meter.CreateCounter<long>("simpeapi.mycounter");
+        _counter = meter.CreateCounter<long>("simpeapi.die_roll_count",
+            description: "The number of times the die has been rolled",
+            unit: "rolls");
+
     }
 
-    public void Increment()
+    public void RecordDiceRoll(int value)
     {
-        _counter.Add(1);
+        _counter.Add(1, new KeyValuePair<string,object?>("value", value));
     }
     
 }
