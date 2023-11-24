@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Reflection;
-using System.Text.Json;
 
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
@@ -13,25 +12,17 @@ string serviceName = Assembly.GetExecutingAssembly().GetName().Name!;
 string serviceVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
                             ?? Assembly.GetExecutingAssembly().GetName()?.Version?.ToString() ?? "1.0.0";
                             
-var resourceBuilder = ResourceBuilder.CreateDefault()
-    .AddService(serviceName,
-                serviceVersion: serviceVersion,
-                serviceInstanceId: null, // think about the cost implications in your scenario of a new timeseries for every version
-                autoGenerateServiceInstanceId: false)
-    .AddAttributes(new [] { new KeyValuePair<string, object>("host.name", Environment.MachineName) });
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<SimpleApiMetrics>();
-
 
 // Configure OpenTelemetry settings, the console exporter
 builder.Services.AddOpenTelemetry()
     .WithMetrics(m => m
         .ConfigureResource(r => {
             r.AddService(serviceName,
-                serviceVersion: null,
-                serviceInstanceId: null,
+                serviceVersion: null, // think about the cost implications of this
+                serviceInstanceId: null, // ... and this
                 autoGenerateServiceInstanceId: false);
             r.AddAttributes(new [] { new KeyValuePair<string, object>("host.name", Environment.MachineName) });
         })
@@ -61,9 +52,8 @@ int RollDice()
 async Task<string> HandleRollDice(string? player, SimpleApiMetrics metrics, HttpContext ctx)
 {
     var result = RollDice();
-    
-    Console.WriteLine(JsonSerializer.Serialize(ctx.User));
 
+    // Simulate some work for demo purposes
     await Task.Delay(random.Next(100, 750));
 
     if (string.IsNullOrEmpty(player))
@@ -74,9 +64,6 @@ async Task<string> HandleRollDice(string? player, SimpleApiMetrics metrics, Http
     {
         logger.LogInformation("{player} is rolling the dice: {result}", player, result);
     }
-
-    if (player == "james")
-        throw new ApplicationException("James is not allowed to play!");
 
     metrics.RecordDiceRoll(result);
 
@@ -93,17 +80,6 @@ app.MapPrometheusScrapingEndpoint();
 
 app.Run();
 
-
-public static class Telemetry
-{
-    public static readonly string ServiceName = Assembly.GetExecutingAssembly().GetName().Name!;
-    
-    public static readonly string ServiceVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-                            ?? Assembly.GetExecutingAssembly().GetName()?.Version?.ToString() ?? "1.0.0";
-    
-    static readonly ActivitySource ActivitySource = new ActivitySource(ServiceName, ServiceVersion);
-}
-
 public class SimpleApiMetrics
 {
     public static readonly string Name = Assembly.GetExecutingAssembly().GetName().Name!;
@@ -115,7 +91,6 @@ public class SimpleApiMetrics
         _counter = meter.CreateCounter<long>("simpeapi.die_roll_count",
             description: "The number of times the die has been rolled",
             unit: "rolls");
-
     }
 
     public void RecordDiceRoll(int value)

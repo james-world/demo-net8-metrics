@@ -9,7 +9,7 @@ export default function() {
   var name = names[(exec.vu.idInTest - 1) % 3];
   http.get(`https://host.docker.internal:8080/rolldice/${name}`);
 
-  think_time = Math.random() * (0.9) + 0.1;
+  var think_time = Math.random() * (0.9) + 0.1;
   sleep(think_time);
   
   if (Math.random() < 0.1)
