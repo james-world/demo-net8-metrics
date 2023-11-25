@@ -88,7 +88,7 @@ public class SimpleApiMetrics
     public SimpleApiMetrics(IMeterFactory meterFactory)
     {
         var meter = meterFactory.Create(Name);
-        _counter = meter.CreateCounter<long>("simpeapi.die_roll_count",
+        _counter = meter.CreateCounter<long>("simpleapi.die_roll_count",
             description: "The number of times the die has been rolled",
             unit: "rolls");
     }
