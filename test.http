@@ -4,3 +4,6 @@ GET https://localhost:8080/rolldice
 
 ###
 GET https://localhost:8080/metrics
+
+###
+GET https://localhost:8080/explode

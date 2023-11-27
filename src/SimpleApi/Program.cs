@@ -3,6 +3,7 @@ using System.Diagnostics.Metrics;
 using System.Reflection;
 
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -18,14 +19,13 @@ builder.Services.AddSingleton<SimpleApiMetrics>();
 
 // Configure OpenTelemetry settings, the console exporter
 builder.Services.AddOpenTelemetry()
+    .ConfigureResource(rb => rb.AddService(
+        serviceName,
+        serviceNamespace: null,
+        serviceVersion,
+        serviceInstanceId: null,
+        autoGenerateServiceInstanceId: false))
     .WithMetrics(m => m
-        .ConfigureResource(r => {
-            r.AddService(serviceName,
-                serviceVersion: null, // think about the cost implications of this
-                serviceInstanceId: null, // ... and this
-                autoGenerateServiceInstanceId: false);
-            r.AddAttributes(new [] { new KeyValuePair<string, object>("host.name", Environment.MachineName) });
-        })
         .AddAspNetCoreInstrumentation()
         .AddMeter(SimpleApiMetrics.Name)
         .AddOtlpExporter((c,r) => {
@@ -36,7 +36,22 @@ builder.Services.AddOpenTelemetry()
         // Including this will show telemetry in the console
         // but it is very noisy!
         // .AddConsoleExporter()
+    )
+    .WithTracing(t => t
+        .AddAspNetCoreInstrumentation()
+        .AddOtlpExporter()
     );
+
+builder.Logging
+    // Uncomment to remove the default console logger
+    // .ClearProviders() 
+    .AddOpenTelemetry(
+    l => {
+        l.AddOtlpExporter();
+        l.IncludeFormattedMessage = true;
+        // Including this will show otel log telemetry in the console
+        // l.AddConsoleExporter();
+    });
 
 var app = builder.Build();
 
@@ -58,11 +73,11 @@ async Task<string> HandleRollDice(string? player, SimpleApiMetrics metrics, Http
 
     if (string.IsNullOrEmpty(player))
     {
-        logger.LogInformation("Anonymous player is rolling the dice: {result}", result);
+        logger.LogInformation("Anonymous player is rolling the dice: {value}", result);
     }
     else
     {
-        logger.LogInformation("{player} is rolling the dice: {result}", player, result);
+        logger.LogInformation("{player} is rolling the dice: {value}", player, result);
     }
 
     metrics.RecordDiceRoll(result);
@@ -71,6 +86,8 @@ async Task<string> HandleRollDice(string? player, SimpleApiMetrics metrics, Http
 }
 
 app.MapGet("/rolldice/{player?}", HandleRollDice);
+
+app.MapGet("/explode", _ => throw new Exception("Boom!"));
 
 // Exposes the Prometheus metrics endpoint on /metrics
 // You can browse this endpoint to see what metrics are being reported

@@ -12,8 +12,15 @@ exporters:
     resource_to_telemetry_conversion:
       enabled: true
 
+  # traces exporter
+  otlp:
+    endpoint: jaegar:4317
+    tls:
+      insecure: true
+
 processors:
-  # enable batching - this is important for performance
+  # enable batching by adding it to processors in the pipeline
+  # this is important for performance, but disabled for demo purposes
   # https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/batchprocessor/README.md
   batch:
 
@@ -23,3 +30,7 @@ service:
       receivers: [otlp]
       processors: []
       exporters: [prometheus]
+    traces:
+      receivers: [otlp]
+      processors: []
+      exporters: [otlp]

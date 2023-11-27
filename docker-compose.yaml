@@ -11,12 +11,17 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
     command: ["--config=/etc/otel-collector-config.yaml"]
+    depends_on:
+      - jaegar
+      - prometheus
+      - grafana
 
   # Prometheus container
   # This will scrape metrics from the OpenTelemetry Contrib Collector's prometheus exporter endpoint
   prometheus:
     image: prom/prometheus:v2.47.2
     ports:
+      # Prometheus UI
       - "9090:9090"
     volumes:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yml
@@ -26,6 +31,7 @@ services:
   grafana:
     image: grafana/grafana-oss:10.2.0
     ports:
+    # Grafana UI
       - "3000:3000"
     volumes:
       # Enable anonymous access, set homepage
@@ -37,3 +43,11 @@ services:
       # Define the two ASP.NET Core Dashboards
       - ./grafana-config/aspnetcore.overview.dashboard.json:/etc/grafana/dashboards/aspnetcore.overview.dashboard.json
       - ./grafana-config/aspnetcore.endpoint.dashboard.json:/etc/grafana/dashboards/aspnetcore.endpoint.dashboard.json
+
+  # Jaegar Container
+  # This will display traces from the OpenTelemetry Contrib Collector
+  jaegar:
+    image: jaegertracing/all-in-one:1.51
+    ports:
+      # Jaegar UI
+      - "16686:16686"
