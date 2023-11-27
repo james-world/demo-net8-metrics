@@ -16,6 +16,7 @@ string serviceVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<Assem
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<SimpleApiMetrics>();
+builder.Services.AddSingleton(new ActivitySource(serviceName, serviceVersion));
 
 // Configure OpenTelemetry settings, the console exporter
 builder.Services.AddOpenTelemetry()
@@ -39,6 +40,7 @@ builder.Services.AddOpenTelemetry()
     )
     .WithTracing(t => t
         .AddAspNetCoreInstrumentation()
+        .AddSource(serviceName)
         .AddOtlpExporter()
     );
 
@@ -64,7 +66,7 @@ int RollDice()
     return Random.Shared.Next(1, 7);
 }
 
-async Task<string> HandleRollDice(string? player, SimpleApiMetrics metrics, HttpContext ctx)
+async Task<string> HandleRollDice(string? player, SimpleApiMetrics metrics, HttpContext ctx, ActivitySource source)
 {
     var result = RollDice();
 
@@ -79,8 +81,14 @@ async Task<string> HandleRollDice(string? player, SimpleApiMetrics metrics, Http
     {
         logger.LogInformation("{player} is rolling the dice: {value}", player, result);
     }
+    
+    using (var activity = source.StartActivity("RollDice"))
+    {
+        await Task.Delay(random.Next(100, 150));
+    }
 
     metrics.RecordDiceRoll(result);
+    
 
     return result.ToString(CultureInfo.InvariantCulture);
 }
