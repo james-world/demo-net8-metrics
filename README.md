@@ -4,6 +4,8 @@ This demo shows how to use Open Telemetry with .NET 8 to instrument a simple web
 
 Grafana has been pre-fitted with slightly modified versions of James Newton-King's ASP.NET Core 8 Grafana dashboards to show off some of the new metrics.
 
+![Demo Diagram](Demo.svg)
+
 ## Prequisites
 
 - .NET 8 SDK
