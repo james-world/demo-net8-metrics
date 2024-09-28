@@ -3,6 +3,7 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: otel-collector:4317
         
 exporters:
   # metrics exporter

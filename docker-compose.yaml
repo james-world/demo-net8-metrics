@@ -4,7 +4,7 @@ services:
   # See https://opentelemetry.io/docs/collector/instaltation/#docker-compose
   # Check there for latest version - for demo stability this file locks to a specific version
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.88.0
+    image: otel/opentelemetry-collector-contrib:0.110.0
     ports:
       - "4317:4317"     # OTLP gRPC receiver
       - "8889:8889"     # Prometheus metrics exporter endpoint
