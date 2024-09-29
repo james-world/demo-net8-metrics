@@ -58,6 +58,13 @@ The folder [grafana-config](grafana-config) contains various configuration files
 
 The file [prometheus.yaml](prometheus.yaml) configures Prometheus to scrape metrics from the Otel Contrib Collector.
 
+# Datadog Exporter
+
+The Otel Contrib Collector can also export telemetry to Datadog. To enable this, you need to set the `DD_API_KEY` environment variable in the `otel-collector` service in the `docker-compose.yaml` file. You can get your Datadog API key from the Datadog website. The `otel-collector-config.yaml` file already has the Datadog exporter enabled for logging. Create a `.env` file with the following content:
+
+```
+DD_API_KEY=your-api-key
+```
 
 ## Find Out More!
 

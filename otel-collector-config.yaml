@@ -19,19 +19,37 @@ exporters:
     tls:
       insecure: true
 
+  # Datadog exporter
+  datadog:
+    api:
+      key: ${env:DD_API_KEY}
+      # Set to 'datadoghq.eu' if you are using Datadog EU site
+      site: datadoghq.com
+      fail_on_invalid_key: true
+
 processors:
   # enable batching by adding it to processors in the pipeline
   # this is important for performance, but disabled for demo purposes
   # https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/batchprocessor/README.md
   batch:
+    send_batch_max_size: 1000
+    send_batch_size: 100
+    timeout: 10s
+    
+connectors:
+  datadog/connector:
 
 service:
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: []
-      exporters: [prometheus]
+      processors: [batch]
+      exporters: [datadog, prometheus]
     traces:
       receivers: [otlp]
-      processors: []
-      exporters: [otlp]
+      processors: [batch]
+      exporters: [datadog, otlp]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [datadog]
